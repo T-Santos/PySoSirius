@@ -1,5 +1,6 @@
 # Standard
 import sqlite3
+import os
 
 # installed
 
@@ -7,16 +8,18 @@ import sqlite3
 
 class SiriusManager(object):
 
-	DATABASE_PATH = './pysosirius/database/'
 	DATABASE_FILENAME = 'PySoSirius.db'
 
 	"""docstring for SiriusManager"""
 	def __init__(self):
 		super(SiriusManager, self).__init__()
 
-		self.database_path = type(self).DATABASE_PATH + type(self).DATABASE_FILENAME
+		self.database_path = os.path.join(os.path.dirname(__file__), type(self).DATABASE_FILENAME)
+
+		print(self.database_path)
 		self.connection = sqlite3.connect(self.database_path)
 		self.cursor = self.connection.cursor()
+		print(self.database_path)
 
 		self._create_channel_table()
 
