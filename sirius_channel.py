@@ -45,11 +45,12 @@ class SiriusChannel(object):
 
 	def get_currently_playing(self):
 
-		self.update_currently_playing()
+		if not self.currently_playing:
+			self.currently_playing = SiriusCurrentlyPlaying(self.id)
+		else:
+			self.currently_playing.update()
 
 		return self.currently_playing
-
-	def update_currently_playing(self):
-		self.currently_playing = SiriusCurrentlyPlaying(self.id)
+		
 
 

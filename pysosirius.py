@@ -78,12 +78,13 @@ class PySoSirius(object):
 		return channels
 
 
-	def get_channel(
-		self,
-		channel = None,
-		channel_name = None,
-		channel_id = None):
-		
-		# This will return one SeriusChannel instance
+	def get_channel(self,**kwargs):
 
-		return None
+		from database.manager import SiriusManager
+		from sirius_channel import SiriusChannel
+
+		db_manager = SiriusManager()
+
+		channel_row = db_manager.get_channel_row(**kwargs)
+		
+		return SiriusChannel(*channel_row)

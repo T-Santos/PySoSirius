@@ -16,10 +16,8 @@ class SiriusManager(object):
 
 		self.database_path = os.path.join(os.path.dirname(__file__), type(self).DATABASE_FILENAME)
 
-		print(self.database_path)
 		self.connection = sqlite3.connect(self.database_path)
 		self.cursor = self.connection.cursor()
-		print(self.database_path)
 
 		self._create_channel_table()
 
@@ -58,7 +56,8 @@ class SiriusManager(object):
 
 		if (not channel and
 			not id and
-			not name):
+			not name and
+			not url):
 			raise ValueError('One of channel, id, name, url is required.')
 
 		if channel:
