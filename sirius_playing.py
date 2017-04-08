@@ -1,9 +1,13 @@
 # standard/installed
 import requests
+import sys
 from functools import reduce
 from operator import getitem
 from datetime import datetime, timedelta
 from time import time
+
+# local modules/packages
+from common.exceptions import AttributeNotFoundError 
 
 
 class SiriusCurrentlyPlaying(object):
@@ -21,7 +25,22 @@ class SiriusCurrentlyPlaying(object):
 							'artist':['artists','name'],
 							'code':['code'],
 							'song':['song','name'],
+							'start':['startTime']
 	}
+
+	@classmethod
+	def get_attribute(cls,keys,data):
+
+		try: 
+			value = reduce(getitem,keys,data)
+			return value
+		except KeyError as error:
+			message = "Key: " + error.message + " does not exist."
+			raise AttributeNotFoundError(message)
+		except:
+			print(sys.exc_info()[1])
+			message = sys.exc_info()[0].__name__ + "  " + sys.exc_info()[1].message
+			raise AttributeNotFoundError(message)
 
 	def __init__(self,channel_id):
 		super(SiriusCurrentlyPlaying,self).__init__()
@@ -32,13 +51,15 @@ class SiriusCurrentlyPlaying(object):
 
 	def __get_currently_playing(self):
 
-		# TODO make sure this is the correct way to get UTC time
-		timenow = (datetime.utcnow() - timedelta(minutes=1)).strftime('%m-%d-%H:%M:00')
+		self.last_updated = time()
+		return requests.get(self.__get_url()).json()
+
+	def __get_url(self):
+
+		timenow = datetime.utcnow().strftime('%m-%d-%H:%M:00')
 		urlSuffix = '/timestamp/'+timenow
 		url = type(self).JSON_URI_PREFIX + self.id + urlSuffix
-
-		self.last_updated = time()
-		return requests.get(url).json()
+		return url
 
 	def update(self):
 
@@ -71,10 +92,11 @@ class SiriusCurrentlyPlaying(object):
 		# other international channels have issues with unicode values
 		msg_code_keys = type(self).JSON_ROOT_MSG_DATA_KEYS['messages'] + type(self).JSON_MSG_DATA_KEYS['code']
 
-		message = reduce(getitem,msg_code_keys,self.data) 
+		message = type(self).get_attribute(msg_code_keys,self.data) 
 
 		if message in type(self).JSON_MSG_SUCCESS_CODES:
-			return reduce(getitem,keys,self.data)
+			return type(self).get_attribute(keys,self.data)
 		else:
 			print(message)
+			print(self.__get_url())
 			return None
