@@ -1,6 +1,7 @@
 # standard/installed
 import requests
 import sys
+
 from functools import reduce
 from operator import getitem
 from datetime import datetime, timedelta
@@ -18,7 +19,8 @@ class SiriusCurrentlyPlaying(object):
 	JSON_ROOT_MSG_DATA_KEYS = {
 								'messages':['channelMetadataResponse','messages'],
 								'song':['channelMetadataResponse','metaData','currentEvent'],
-		}
+								'status':['channelMetadataResponse']
+								}
 
 	JSON_MSG_DATA_KEYS = {
 							'album':['song','album','name'],
@@ -26,7 +28,7 @@ class SiriusCurrentlyPlaying(object):
 							'code':['code'],
 							'song':['song','name'],
 							'start':['startTime']
-	}
+							}
 
 	@classmethod
 	def get_attribute(cls,keys,data):
@@ -50,11 +52,15 @@ class SiriusCurrentlyPlaying(object):
 		self.data = self.__get_currently_playing()
 
 	def __get_currently_playing(self):
-
+		
 		self.last_updated = time()
-		return requests.get(self.__get_url()).json()
+		try:
+			response = requests.get(self._get_url()).json()
+		except ConnectionError:
+			response = {}
+		return response
 
-	def __get_url(self):
+	def _get_url(self):
 
 		timenow = datetime.utcnow().strftime('%m-%d-%H:%M:00')
 		urlSuffix = '/timestamp/'+timenow
@@ -82,14 +88,19 @@ class SiriusCurrentlyPlaying(object):
 	def album(self):
 		keys = type(self).JSON_ROOT_MSG_DATA_KEYS['song'] + type(self).JSON_MSG_DATA_KEYS['album']
 		return self.currently_playing_item(keys)
+	
+	@property
+	def start(self):
+		keys = type(self).JSON_ROOT_MSG_DATA_KEYS['song'] + type(self).JSON_MSG_DATA_KEYS['start']
+		return self.currently_playing_item(keys)
+	
+	@property
+	def status(self):
+		keys = type(self).JSON_ROOT_MSG_DATA_KEYS['status'] + ['status']
+		return self.currently_playing_item(keys)
 
-	# TODO: change this to __getitem__ or overload/subclass it somehow
-	# or catch the key exception and raise my own
 	def currently_playing_item(self,keys):
 
-		# TODO: some items have issues on their return values
-		# DR DRE: albumn 2001 song: forgot about dre has issues since its an int 2001
-		# other international channels have issues with unicode values
 		msg_code_keys = type(self).JSON_ROOT_MSG_DATA_KEYS['messages'] + type(self).JSON_MSG_DATA_KEYS['code']
 
 		message = type(self).get_attribute(msg_code_keys,self.data) 
@@ -97,6 +108,4 @@ class SiriusCurrentlyPlaying(object):
 		if message in type(self).JSON_MSG_SUCCESS_CODES:
 			return type(self).get_attribute(keys,self.data)
 		else:
-			print(message)
-			print(self.__get_url())
 			return None
