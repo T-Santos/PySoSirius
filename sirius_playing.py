@@ -1,5 +1,6 @@
 # standard/installed
 import requests
+from requests.exceptions import ConnectionError, Timeout
 import sys
 
 from functools import reduce
@@ -40,7 +41,6 @@ class SiriusCurrentlyPlaying(object):
 			message = "Key: " + error.message + " does not exist."
 			raise AttributeNotFoundError(message)
 		except:
-			print(sys.exc_info()[1])
 			message = sys.exc_info()[0].__name__ + "  " + sys.exc_info()[1].message
 			raise AttributeNotFoundError(message)
 
@@ -56,7 +56,7 @@ class SiriusCurrentlyPlaying(object):
 		self.last_updated = time()
 		try:
 			response = requests.get(self._get_url()).json()
-		except ConnectionError:
+		except (ConnectionError,Timeout,ValueError):
 			response = {}
 		return response
 
