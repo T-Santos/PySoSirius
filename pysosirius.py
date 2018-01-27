@@ -5,7 +5,7 @@ from collections import namedtuple
 # installed packages/modules
 
 # my pagkages/modules
-from defaults import *
+from .defaults import *
 
 class PySoSirius(object):
 
@@ -62,8 +62,8 @@ class PySoSirius(object):
 	
 	def get_channels(self):
 
-		from database.manager import SiriusManager
-		from sirius_channel import SiriusChannel
+		from .database.manager import SiriusManager
+		from .sirius_channel import SiriusChannel
 
 		channels = []
 		db_manager = SiriusManager()

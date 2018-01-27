@@ -3,7 +3,7 @@
 # installed
 
 # my
-from sirius_playing import SiriusCurrentlyPlaying
+from .sirius_playing import SiriusCurrentlyPlaying
 
 class SiriusChannel(object):
 
