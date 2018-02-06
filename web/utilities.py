@@ -53,6 +53,8 @@ class SiriusScraper(object):
 		# set the platform choice cookie on bogus page
 		cookie = {'name' : "sxm_platform", 'value' : 'sirius'}
 		self.browser.add_cookie(cookie)
+		cookie = {'name' : "sxm_radio", 'value' : 'YMM|2012|Nissan|Sentra'}
+		self.browser.add_cookie(cookie)
 		
 		# now nav to the all channels page for scraping
 		self.browser.get(type(self).URI_ALL_CHANNELS)
@@ -154,4 +156,5 @@ class SiriusScraper(object):
 
 	def __del__(self):
 
-		self.browser.quit()
+		if self.browser:
+			self.browser.quit()
