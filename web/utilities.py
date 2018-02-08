@@ -17,12 +17,14 @@ class SiriusScraper(object):
 	"""docstring for Scraper"""
 	
 	# TODO: Maybe have named tuple to manage the channeldata fromt he table
-
-	URL_FOR_COOKIE = 'http://www.siriusxm.com'
+	ROOT_URL = 'http://www.siriusxm.com/'
+	URL_FOR_COOKIE = ROOT_URL
 	URI_ALL_CHANNELS = 'http://www.siriusxm.com/channellineup/'
 	CHANNEL_TABLE_ID = 'packageChannelsTable'
 
 	CHANNEL_INTERNAL_ID_VAR = 'SXM.ChannelContentID = '
+
+	SIRIUS_CHANNEL_NUMBER_MAP = {714: ('Indie1.0','Indie 1.0')}
 
 	@classmethod
 	def get_channel_id(cls,url):
@@ -138,23 +140,29 @@ class SiriusScraper(object):
 
 		if cells:
 			# TODO: make sure we make use of the named tuple here instead
-			channel_number = 0
-			channel_name = 1
-			channel_category = 2
-			channel_genre = 3
-			channel_desc = 4
-			url = cells[channel_number].find_element_by_tag_name('a').get_attribute('href')
-			channel_data = (int(cells[channel_number].text.encode('ascii','ignore')),
+			cell_channel_number = 0
+			cell_channel_name = 1
+			cell_channel_category = 2
+			cell_channel_genre = 3
+			cell_channel_desc = 4
+
+			channel_number = int(cells[cell_channel_number].text.encode('ascii','ignore'))
+			channel_name = cells[cell_channel_name].text.encode('ascii','ignore')
+
+			# known SiriusXM Channel URL bugs
+			# ensure number and name is correct
+			if (channel_number in type(self).SIRIUS_CHANNEL_NUMBER_MAP
+				and channel_name == type(self).SIRIUS_CHANNEL_NUMBER_MAP[channel_number][1]):
+				url = type(self).ROOT_URL+type(self).SIRIUS_CHANNEL_NUMBER_MAP[channel_number][0]
+			else:
+				url = cells[cell_channel_number].find_element_by_tag_name('a').get_attribute('href')
+
+			channel_data = (channel_number,
 				 			type(self).get_channel_id(url),
-							cells[channel_name].text.encode('ascii','ignore'),
+							channel_name,
 							url,
-							cells[channel_category].text.encode('ascii','ignore'),
-							cells[channel_genre].text.encode('ascii','ignore'),
-							cells[channel_desc].text.encode('ascii','ignore'))
+							cells[cell_channel_category].text.encode('ascii','ignore'),
+							cells[cell_channel_genre].text.encode('ascii','ignore'),
+							cells[cell_channel_desc].text.encode('ascii','ignore'))
 
 		return channel_data
-
-	def __del__(self):
-
-		if self.browser:
-			self.browser.quit()
