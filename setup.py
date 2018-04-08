@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
 	name='pysosirius',
-	version='0.0.9',
+	version='0.1.0',
 	description='Unofficial Sirius XM API',
 	url='https://github.com/T-Santos/PySoSirius',
 	author='Tyler Santos',
